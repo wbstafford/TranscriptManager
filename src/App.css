@@ -5,6 +5,17 @@
   text-align: center;
 }
 
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+*, *::before, *::after {
+  box-sizing: inherit;
+}
+
 .logo {
   height: 6em;
   padding: 1.5em;
