@@ -38,6 +38,17 @@ router.route("/users/:id").get((request, response) => {
 })
 
 //verify if an email exists in the system
+router.route("/user/:email").get((request, response) => {
+  dboperations.getUserByEmail(request.params.email).then(result => {
+    if (result.length > 0) {
+      response.json(result[0]);
+    } else {
+      response.send({ id: 0 });
+    }
+  })
+})
+
+//return the user info by email
 router.route("/lookup/:email").post((request, response) => {
   dboperations.getUserByEmail(request.params.email).then(result => {
     if (result.length > 0) {

@@ -1,6 +1,6 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { LoginForm } from "./LoginForm";
-import HomePage from "./HomePage";
+import Transcript from "./Transcript";
 
 const AppRouter = () => {
   return (
@@ -8,7 +8,7 @@ const AppRouter = () => {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<LoginForm />} />
-          <Route path="/transcript/:email" element={<HomePage />} />
+          <Route path="/transcript/:email" element={<Transcript />} />
         </Routes>
       </BrowserRouter>
     </>
