@@ -1,5 +1,7 @@
  var config = require('./dbconfig.cjs');
  const sql = require('mssql');
+ const bcrypt = require('bcrypt');
+const saltRounds = 10;
 
  //Get all users
 async function getAllUsers() {
@@ -29,17 +31,41 @@ async function getUser(userID) {
     //console.log("Got get users");
 }
 
-async function addUser(user) {
+//get a specific user by ID
+async function getUserByEmail(email) {
     try{
         let pool = await sql.connect(config);
-        let insertUser = await pool.request()
-            .input('NewId', sql.Int, user.id)
-            .input('FirstName', sql.VarChar, user.FirstName)
-            .input('LastName', sql.VarChar, user.LastName)
-            .input('Email', sql.VarChar, user.Email)
-            .input('Password', sql.VarChar, user.Password)
-            .execute('CreateUser');
-        return insertUser.recordsets;
+        let User = await pool.request()
+            .input('input_parameter',sql.VarChar, email)
+            .query("SELECT * FROM TranscriptUsers WHERE Email=@input_parameter");
+        return User.recordset;
+    }
+    catch (error) {
+        console.log(error);
+    }
+    //console.log("Got get users");
+}
+
+async function addUser(user) {
+    try{
+        const password = user.Password;
+
+        //get the hashed password
+        bcrypt.hash(password, saltRounds).then(async hash => {
+            let pool = await sql.connect(config);
+            let insertUser = await pool.request()
+                .input('NewId', sql.Int, user.id)
+                .input('FirstName', sql.VarChar, user.FirstName)
+                .input('LastName', sql.VarChar, user.LastName)
+                .input('Email', sql.VarChar, user.Email)
+                .input('Password', sql.VarChar, hash)
+                .execute('CreateUser');
+            return insertUser.recordset;
+        })
+        .catch(error => {
+            console.log(error.message);
+            return 0;
+    });
     }
     catch (error) {
         console.log(error);
@@ -50,5 +76,6 @@ async function addUser(user) {
 module.exports = {
     getAllUsers : getAllUsers,
     getUser : getUser,
-    addUser : addUser
+    addUser : addUser,
+    getUserByEmail : getUserByEmail
 }

@@ -6,6 +6,10 @@ const bodyParser = require('body-parser');
 const app = express();
 const router = express.Router();
 const dboperations = require('./dboperations.cjs');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
+const saltRounds = 10;
+
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -15,7 +19,7 @@ app.use('/api', router);
 
 //middleware here
 router.use((request,response,next) => {
-  console.log("middleware");
+  //console.log("middleware");
   next();
 })
 
@@ -35,11 +39,42 @@ router.route("/users/:id").get((request,response) => {
 
 //get all users
 router.route("/users").post((request,response) => {
-
   let user = {...request.body}
-
   dboperations.addUser(user).then(result => {
+    console.log("result of add user: " + result);
     response.status(201).json(result);
+  })
+})
+
+
+//log in route
+router.route("/login").get((request,response) => {
+  const { Email, Password} = request.body;
+  
+  dboperations.getUserByEmail(Email)
+  .then(result => {
+
+    if (result.length > 0) {
+      const email = result[0].Email;
+      const returnedPassword = result[0].Password;
+      const userId = result[0].id;
+
+      bcrypt.compare(Password, returnedPassword, (error, verdict) => {
+        if (verdict) {
+
+          const token = jwt.sign({userID: userId}, "jwtsecret", {
+            expiresIn: '10h'
+          });
+
+          response.json({auth: true, token: token, result: result})
+        } else {
+          response.send({ message: "Wrong username/password combination"});
+        }
+      })
+    } else {
+      response.send({ message: "User does not exist"});
+    }
+
   })
 })
 
@@ -57,13 +92,6 @@ const sampleResult = {
 router.route("/test").get((request,response) => {
   response.json(sampleResult);
 })
-
-
-
-
-// app.post("/test", (req,res) => {
-//   res.json(sampleResult);
-// })
 
 const port = process.env.PORT || 3001;
 app.listen(port, () => {

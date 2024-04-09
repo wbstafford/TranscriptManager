@@ -173,7 +173,7 @@ export const LoginForm: React.FC = () => {
                 </Box>
 
                 <Heading color="blue.200" as="h4" size="md" paddingTop="20px">
-                  Log In
+                  Manage your Transcript
                 </Heading>
                 <Box width="100%">
                   <form onSubmit={handleSubmit}>
