@@ -1,17 +1,44 @@
-import { HStack, Avatar, Image, Flex } from '@chakra-ui/react';
+import {
+  HStack,
+  Avatar,
+  Image,
+  Flex,
+  Heading,
+  Box,
+  Spacer,
+  Stack,
+  Text,
+} from "@chakra-ui/react";
 
-const TranscriptHeader = () => {
-    return (
-        <Flex
-        justifyContent="center"
-        alignItems="center"
-        width="1000px"
-      >
-            <HStack padding="10px">
-                <Avatar border="2px solid #111" size='xl' name='Brian Stafford' src="/public/pic1.jpg" />
-            </HStack>
-        </Flex>
-      );
+interface Props {
+  userName?: string;
+  AvatarURL?: string;
 }
 
-export default TranscriptHeader
+const TranscriptHeader = ({ userName, AvatarURL }: Props) => {
+  return (
+    <>
+      <Flex width="100%">
+        <Box paddingTop={5}>
+          <Stack textAlign="left" spacing={0}>
+            <Heading as="h3" fontSize="24px">
+              {userName}
+            </Heading>
+            <Text>brian.stafford@yahoo.com</Text>
+          </Stack>
+        </Box>
+        <Spacer />
+        <Box p="4">
+          <Avatar
+            border="2px solid #111"
+            size="lg"
+            name="Brian Stafford"
+            src={AvatarURL}
+          />
+        </Box>
+      </Flex>
+    </>
+  );
+};
+
+export default TranscriptHeader;
