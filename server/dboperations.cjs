@@ -73,9 +73,26 @@ async function addUser(user) {
     //console.log("Got get users");
 }
 
+// COURSE OPERATIONS
+//get courses by userID
+async function getCourses(userID) {
+    try {
+        let pool = await sql.connect(config);
+        let User = await pool.request()
+            .input('input_parameter', sql.Int, userID)
+            .query("SELECT * FROM Course WHERE UserId=@input_parameter ORDER BY CompletedDate DESC");
+        return User.recordsets;
+    }
+    catch (error) {
+        console.log(error);
+    }
+    //console.log("Got get users");
+}
+
 module.exports = {
     getAllUsers: getAllUsers,
     getUser: getUser,
     addUser: addUser,
-    getUserByEmail: getUserByEmail
+    getUserByEmail: getUserByEmail,
+    getCourses : getCourses
 }

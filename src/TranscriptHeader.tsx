@@ -1,10 +1,8 @@
 import {
-  HStack,
   Avatar,
-  Image,
+  Box,
   Flex,
   Heading,
-  Box,
   Spacer,
   Stack,
   Text,
@@ -13,9 +11,10 @@ import {
 interface Props {
   userName?: string;
   AvatarURL?: string;
+  Email: string;
 }
 
-const TranscriptHeader = ({ userName, AvatarURL }: Props) => {
+const TranscriptHeader = ({ userName, AvatarURL, Email }: Props) => {
   return (
     <>
       <Flex width="100%">
@@ -24,7 +23,7 @@ const TranscriptHeader = ({ userName, AvatarURL }: Props) => {
             <Heading as="h3" fontSize="24px">
               {userName}
             </Heading>
-            <Text>brian.stafford@yahoo.com</Text>
+            <Text>{Email}</Text>
           </Stack>
         </Box>
         <Spacer />

@@ -1,69 +1,70 @@
+import { Box, Flex, SimpleGrid, Text } from "@chakra-ui/react";
 import { useParams } from "react-router-dom";
+import TranscriptCard from "./TranscriptCard";
 import TranscriptHeader from "./TranscriptHeader";
-import useUser from "./hooks/useUser";
-import {
-  Box,
-  Button,
-  Card,
-  CardBody,
-  CardFooter,
-  ChakraProvider,
-  Container,
-  Flex,
-  Heading,
-  Image,
-  SimpleGrid,
-  Stack,
-  Text,
-  VStack,
-} from "@chakra-ui/react";
+import axios from "axios";
+import { user } from "./entities/User";
+import { useEffect, useState } from "react";
+
+async function fetchUserByEmail(email: string): Promise<user | null> {
+  if (email == null) {
+    return null;
+  } else {
+    try {
+      const response = await axios.get(
+        `http://localhost:3001/api/user/${encodeURIComponent(email)}`
+      );
+      // Assuming the API directly returns a user object
+      return response.data as user;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error("There was an error fetching the user: ", error.message);
+        // Handle Axios-specific error here. For example, you might want to return null or throw a custom error
+        return null; // Return null or handle as appropriate for your application
+      } else {
+        // Handle unexpected errors
+        console.error("An unexpected error occurred: ", error);
+        throw error; // Or handle as needed
+      }
+    }
+  }
+}
 
 const Transcript = () => {
   const { email } = useParams();
 
   //get the info about the user
-  const { data: user, isLoading, error } = useUser(email!);
+  const [user, setUser] = useState<user | null>(null);
 
-  console.log(user?.FirstName);
+  useEffect(() => {
+    fetchUserByEmail(email!)
+      .then(setUser)
+      .catch((error) => console.error("Failed to fetch courses", error));
+  }, []);
 
   return (
     <>
-      <Flex justifyContent="center" alignItems="center" width="100vw">
-        <SimpleGrid columns={1} spacing={3} width="1000px">
-          <Box paddingX={2}>
-            <TranscriptHeader
-              userName={user?.FirstName + " " + user?.LastName}
-              AvatarURL={user?.AvatarURL}
-            />
-          </Box>
-
-          <Card direction={{ base: "column", sm: "row" }} overflow="hidden">
-            <Image
-              objectFit="cover"
-              maxW={{ base: "100%", sm: "200px" }}
-              src="https://images.unsplash.com/photo-1667489022797-ab608913feeb?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxlZGl0b3JpYWwtZmVlZHw5fHx8ZW58MHx8fHw%3D&auto=format&fit=crop&w=800&q=60"
-              alt="Caffe Latte"
-            />
-
-            <Stack maxW="100%" width="100%">
-              <CardBody>
-                <Heading size="md">The perfect latte</Heading>
-
-                <Text py="2">
-                  Caffè latte is a coffee beverage of Italian origin made with
-                  espresso and steamed milk.
-                </Text>
-              </CardBody>
-
-              <CardFooter>
-                <Button variant="solid" colorScheme="blue">
-                  Buy Latte
-                </Button>
-              </CardFooter>
-            </Stack>
-          </Card>
-        </SimpleGrid>
-      </Flex>
+      {user ? (
+        <Flex justifyContent="center" alignItems="center" width="100vw">
+          <SimpleGrid columns={1} spacing={3} width="1000px">
+            <Box paddingX={2}>
+              <TranscriptHeader
+                userName={user.FirstName + " " + user.LastName}
+                AvatarURL={user.AvatarURL}
+                Email={user.Email}
+              />
+            </Box>
+            <Box paddingX={2}>
+              <Text fontSize="18px" fontWeight="bold">
+                Courses/certifications completed
+              </Text>
+            </Box>
+            <TranscriptCard userId={user.id} />
+          </SimpleGrid>
+        </Flex>
+      ) : (
+        <p>The user does not have a transcript in this system</p>
+      )}
     </>
   );
 };

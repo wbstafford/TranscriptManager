@@ -12,6 +12,7 @@
     "start": "nodemon server/index.cjs"
   },
   "dependencies": {
+    "@chakra-ui/icons": "^2.1.1",
     "@chakra-ui/react": "^2.8.2",
     "axios": "^1.6.8",
     "bcrypt": "^5.1.1",

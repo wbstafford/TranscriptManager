@@ -69,6 +69,14 @@ router.route("/users").post((request, response) => {
   })
 })
 
+//COURSE ROUTES
+//get a specified user by id
+router.route("/courses/:userId").get((request, response) => {
+  dboperations.getCourses(request.params.userId).then(result => {
+    response.json(result[0]);
+  })
+})
+
 
 //log in route
 router.route("/login").get((request, response) => {
