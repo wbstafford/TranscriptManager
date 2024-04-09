@@ -1,22 +1,21 @@
+import { CheckIcon } from "@chakra-ui/icons";
 import {
+  Box,
   Card,
   CardBody,
   CardFooter,
-  Heading,
-  Image,
-  Stack,
-  Box,
-  HStack,
   Flex,
-  Spacer,
+  Heading,
   Icon,
+  Image,
+  Spacer,
+  Stack,
   Text,
 } from "@chakra-ui/react";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import ExpandableDescription from "./ExpandableDescription";
 import { course } from "./entities/Course";
-import { CheckIcon } from "@chakra-ui/icons";
 
 interface Params {
   userId: number;
@@ -130,7 +129,7 @@ const TranscriptCard = ({ userId }: Params) => {
                 <Box color="gray.300">
                   {course.Verified === "y" && (
                     <>
-                      Verified!
+                      Verified Source!
                       <Icon
                         as={CheckIcon}
                         color="green.200"
