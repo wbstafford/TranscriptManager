@@ -1,36 +1,36 @@
-import React, { useState } from "react";
-import { useMutation } from "react-query";
-import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import {
-  Flex,
-  Heading,
-  Input,
-  Button,
-  InputGroup,
-  Stack,
-  InputLeftElement,
-  chakra,
   Box,
-  Link,
-  Avatar,
+  Button,
+  Flex,
   FormControl,
   FormHelperText,
-  InputRightElement,
-  Grid,
   GridItem,
+  Heading,
+  Input,
+  InputGroup,
+  InputLeftElement,
+  InputRightElement,
+  Link,
   SimpleGrid,
+  Stack,
+  Text,
   VStack,
+  chakra
 } from "@chakra-ui/react";
-import { FaUser, FaLock } from "react-icons/fa6";
+import axios from "axios";
+import React, { useState } from "react";
 import { CgFileDocument } from "react-icons/cg";
 import { FaRegUser } from "react-icons/fa";
+import { FaLock, FaUser } from "react-icons/fa6";
+import { useNavigate } from "react-router-dom";
 
+//ICONS
 const CFaUserAlt = chakra(FaUser);
 const CFaLock = chakra(FaLock);
 const DocumentIcon = chakra(CgFileDocument);
 const UserIcon = chakra(FaRegUser);
 
+//INTERFACES
 interface LoginResponse {
   token: string;
   user: {
@@ -41,41 +41,89 @@ interface LoginResponse {
   };
 }
 
-const loginUser = async (userData: {
-  email: string;
-  password: string;
-}): Promise<LoginResponse> => {
-  const { data } = await axios.post<LoginResponse>(
-    "http://localhost:3001/test",
-    userData
-  );
-  return data;
-};
+interface LookupResponse {
+  id: number;
+}
+
+// const loginUser = async (userData: {
+//   email: string;
+//   password: string;
+// }): Promise<LoginResponse> => {
+//   const { data } = await axios.post<LoginResponse>(
+//     "http://localhost:3001/test",
+//     userData
+//   );
+//   return data;
+// };
 
 export const LoginForm: React.FC = () => {
-  const [email, setEmail] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
+
+  //Form Fields
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [lookupEmail, setLookupEmail] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [lookupError, setLookupError] = useState<string | null>(null);
+  const handleShowClick = () => setShowPassword(!showPassword);
   const navigate = useNavigate();
 
-  const [showPassword, setShowPassword] = useState(false);
+  // const { mutate, isError, error } = useMutation<
+  //   LoginResponse,
+  //   Error,
+  //   { email: string; password: string }
+  // >(loginUser, {
+  //   onSuccess: (data) => {
+  //     localStorage.setItem("token", data.token);
+  //     //console.log("About to navigate: " + data.user.lastname);
+  //     //navigate('/home'); // Navigate to the home page upon successful login
+  //   },
+  // });
 
-  const handleShowClick = () => setShowPassword(!showPassword);
-
-  const { mutate, isError, error } = useMutation<
-    LoginResponse,
-    Error,
-    { email: string; password: string }
-  >(loginUser, {
-    onSuccess: (data) => {
-      localStorage.setItem("token", data.token); // Save the token to localStorage or your preferred storage
-      console.log("About to navigate: " + data.user.lastname);
+  const login = async (email: string, password: string) => {
+    try {
+      const { data } = await axios.post<LoginResponse>('/api/login.js', { email, password });
+      localStorage.setItem('token', data.token);
       //navigate('/home'); // Navigate to the home page upon successful login
-    },
-  });
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        // Handle the error from the API if it's an AxiosError
+        setError(error.response.data.message);
+      } else {
+        // Generic error message for other errors
+        setError('An unexpected error occurred.');
+      }
+    }
+  };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const lookup = async (email: string) => {
+    try {
+      const { data } = await axios.post<LookupResponse>(`http://localhost:3001/api/lookup/${email}`, {});
+      const userId = data.id;
+      console.log("Found user ID: " + userId);
+      if (userId === 0) {
+        setLookupError("That email does not exist.");
+      } else {
+        setLookupError("");
+        navigate(`/transcript/${email}`);
+      }
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        setLookupError(error.response.data.message);
+      } else {
+        setLookupError('An unexpected error occurred.');
+      }
+    }
+  }
+
+  const handleLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    mutate({ email, password });
+    login(email, password);
+  };
+
+  const handleLookupSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+    lookup(lookupEmail);
   };
 
   return (
@@ -122,7 +170,7 @@ export const LoginForm: React.FC = () => {
                   Find a public Transcript
                 </Heading>
                 <Box width="100%">
-                  <form>
+                  <form onSubmit={handleLookupSubmit}>
                     <Stack spacing={4} p="1rem">
                       <FormControl>
                         <InputGroup>
@@ -130,20 +178,27 @@ export const LoginForm: React.FC = () => {
                             pointerEvents="none"
                             children={<CFaUserAlt color="gray.300" />}
                           />
-                          <Input type="email" placeholder="email address" />
+                          <Input
+                            type="email"
+                            placeholder="email address"
+                            id="lookupEmail"
+                            value={lookupEmail}
+                            onChange={(event) => setLookupEmail(event.target.value)}
+                          />
                         </InputGroup>
                       </FormControl>
-
+                      <Text as="i" height="30px" color="red.300" > {lookupError && <>{lookupError}</>}</Text>
                       <Button
                         borderRadius={0}
                         type="submit"
                         variant="solid"
                         colorScheme="blue"
                         width="full"
-                        marginTop={{ base: "5px", lg: "84px" }}
+                        marginTop={{ base: "5px", lg: "54px" }}
                       >
                         Find
                       </Button>
+                      
                     </Stack>
                   </form>
                 </Box>
@@ -176,7 +231,7 @@ export const LoginForm: React.FC = () => {
                   Manage your Transcript
                 </Heading>
                 <Box width="100%">
-                  <form onSubmit={handleSubmit}>
+                  <form onSubmit={handleLoginSubmit}>
                     <Stack spacing={4} p="1rem">
                       <FormControl>
                         <InputGroup>
@@ -230,7 +285,7 @@ export const LoginForm: React.FC = () => {
                       >
                         Login
                       </Button>
-                      {isError && <div>Error: {error?.message}</div>}
+                      {error && <div>{error}</div>}
                     </Stack>
                   </form>
                 </Box>

@@ -18,28 +18,40 @@ app.use('/api', router);
 
 
 //middleware here
-router.use((request,response,next) => {
+router.use((request, response, next) => {
   //console.log("middleware");
   next();
 })
 
 //get all users
-router.route("/users").get((request,response) => {
+router.route("/users").get((request, response) => {
   dboperations.getAllUsers().then(result => {
     response.json(result[0]);
   })
 })
 
 //get a specified user by id
-router.route("/users/:id").get((request,response) => {
+router.route("/users/:id").get((request, response) => {
   dboperations.getUser(request.params.id).then(result => {
     response.json(result[0]);
   })
 })
 
-//get all users
-router.route("/users").post((request,response) => {
-  let user = {...request.body}
+//verify if an email exists in the system
+router.route("/lookup/:email").post((request, response) => {
+  dboperations.getUserByEmail(request.params.email).then(result => {
+    if (result.length > 0) {
+      response.send({ id: result[0].id });
+    } else {
+      response.send({ id: 0 });
+    }
+
+  })
+})
+
+//Add as new user
+router.route("/users").post((request, response) => {
+  let user = { ...request.body }
   dboperations.addUser(user).then(result => {
     console.log("result of add user: " + result);
     response.status(201).json(result);
@@ -48,49 +60,37 @@ router.route("/users").post((request,response) => {
 
 
 //log in route
-router.route("/login").get((request,response) => {
-  const { Email, Password} = request.body;
-  
+router.route("/login").get((request, response) => {
+  const { Email, Password } = request.body;
+
   dboperations.getUserByEmail(Email)
-  .then(result => {
+    .then(result => {
 
-    if (result.length > 0) {
-      const email = result[0].Email;
-      const returnedPassword = result[0].Password;
-      const userId = result[0].id;
+      if (result.length > 0) {
+        const email = result[0].Email;
+        const returnedPassword = result[0].Password;
+        const userId = result[0].id;
 
-      bcrypt.compare(Password, returnedPassword, (error, verdict) => {
-        if (verdict) {
+        bcrypt.compare(Password, returnedPassword, (error, verdict) => {
+          if (verdict) {
 
-          const token = jwt.sign({userID: userId}, "jwtsecret", {
-            expiresIn: '10h'
-          });
+            //generate a JasonWebToken
+            const JWTKey = process.env._JWT_SECRET_KEY;
 
-          response.json({auth: true, token: token, result: result})
-        } else {
-          response.send({ message: "Wrong username/password combination"});
-        }
-      })
-    } else {
-      response.send({ message: "User does not exist"});
-    }
+            const token = jwt.sign({ userID: userId }, JWTKey, {
+              expiresIn: '10h'
+            });
 
-  })
-})
+            response.json({ auth: true, token: token, result: result })
+          } else {
+            response.send({ message: "Wrong username/password combination" });
+          }
+        })
+      } else {
+        response.send({ message: "User does not exist" });
+      }
 
-//test using the hard coded test data
-const sampleResult = {
-  token: 'abcdefg',
-  user: {
-    firstname: 'Brian',
-    lastname: 'Stafford',
-    email: "brian.stafford@yahoo.com",
-    isAdmin: true
-  }
-}
-
-router.route("/test").get((request,response) => {
-  response.json(sampleResult);
+    })
 })
 
 const port = process.env.PORT || 3001;

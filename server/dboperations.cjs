@@ -1,11 +1,11 @@
- var config = require('./dbconfig.cjs');
- const sql = require('mssql');
- const bcrypt = require('bcrypt');
+var config = require('./dbconfig.cjs');
+const sql = require('mssql');
+const bcrypt = require('bcrypt');
 const saltRounds = 10;
 
- //Get all users
+//Get all users
 async function getAllUsers() {
-    try{
+    try {
         let pool = await sql.connect(config);
         let Users = await pool.request().query("SELECT * FROM TranscriptUsers");
         return Users.recordsets;
@@ -18,10 +18,10 @@ async function getAllUsers() {
 
 //get a specific user by ID
 async function getUser(userID) {
-    try{
+    try {
         let pool = await sql.connect(config);
         let User = await pool.request()
-            .input('input_parameter',sql.Int, userID)
+            .input('input_parameter', sql.Int, userID)
             .query("SELECT * FROM TranscriptUsers WHERE id=@input_parameter");
         return User.recordsets;
     }
@@ -31,12 +31,12 @@ async function getUser(userID) {
     //console.log("Got get users");
 }
 
-//get a specific user by ID
+//get a specific user by Email
 async function getUserByEmail(email) {
-    try{
+    try {
         let pool = await sql.connect(config);
         let User = await pool.request()
-            .input('input_parameter',sql.VarChar, email)
+            .input('input_parameter', sql.VarChar, email)
             .query("SELECT * FROM TranscriptUsers WHERE Email=@input_parameter");
         return User.recordset;
     }
@@ -47,7 +47,7 @@ async function getUserByEmail(email) {
 }
 
 async function addUser(user) {
-    try{
+    try {
         const password = user.Password;
 
         //get the hashed password
@@ -62,10 +62,10 @@ async function addUser(user) {
                 .execute('CreateUser');
             return insertUser.recordset;
         })
-        .catch(error => {
-            console.log(error.message);
-            return 0;
-    });
+            .catch(error => {
+                console.log(error.message);
+                return 0;
+            });
     }
     catch (error) {
         console.log(error);
@@ -74,8 +74,8 @@ async function addUser(user) {
 }
 
 module.exports = {
-    getAllUsers : getAllUsers,
-    getUser : getUser,
-    addUser : addUser,
-    getUserByEmail : getUserByEmail
+    getAllUsers: getAllUsers,
+    getUser: getUser,
+    addUser: addUser,
+    getUserByEmail: getUserByEmail
 }
